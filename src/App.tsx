@@ -116,6 +116,10 @@ export default function App() {
     }
   };
 
+  const isImageUrl = (url: string) => {
+    return url.match(/\.(jpeg|jpg|gif|png|ico|svg|webp)$/) != null || url.startsWith('http');
+  };
+
   const formattedTime = currentTime.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
   const formattedDate = currentTime.toLocaleDateString('es-ES', { weekday: 'long', month: 'long', day: 'numeric' });
 
@@ -217,10 +221,20 @@ export default function App() {
                             if (e.key === 'Escape') setEditingIconId(null);
                           }}
                           onClick={(e) => e.stopPropagation()}
-                          className="w-full h-full bg-black/40 text-center text-3xl focus:outline-none rounded-xl"
+                          className="w-full h-full bg-black/40 text-center text-sm focus:outline-none rounded-xl text-white"
+                          placeholder="Emoji o URL .ico"
                         />
                       ) : app.icon ? (
-                        <span className="text-4xl filter drop-shadow-lg">{app.icon}</span>
+                        isImageUrl(app.icon) ? (
+                          <img 
+                            src={app.icon} 
+                            alt="" 
+                            className="w-full h-full object-contain filter brightness-125 drop-shadow-xl"
+                            referrerPolicy="no-referrer"
+                          />
+                        ) : (
+                          <span className="text-4xl filter drop-shadow-lg">{app.icon}</span>
+                        )
                       ) : favicon ? (
                         <img 
                           src={favicon} 
@@ -311,7 +325,11 @@ export default function App() {
               >
                 <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
                 {app.icon ? (
-                  <span className="text-2xl filter drop-shadow-md group-hover:scale-125 transition-transform duration-500">{app.icon}</span>
+                  isImageUrl(app.icon) ? (
+                    <img src={app.icon} alt="" className="w-full h-full object-contain filter brightness-125 group-hover:scale-125 transition-transform duration-500" referrerPolicy="no-referrer" />
+                  ) : (
+                    <span className="text-2xl filter drop-shadow-md group-hover:scale-125 transition-transform duration-500">{app.icon}</span>
+                  )
                 ) : favicon ? (
                   <img src={favicon} alt="" className="w-full h-full object-contain filter brightness-125 group-hover:scale-125 transition-transform duration-500" referrerPolicy="no-referrer" />
                 ) : (
@@ -408,19 +426,19 @@ export default function App() {
               initial={{ opacity: 0, scale: 0.9, y: 40 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 40 }}
-              className="relative w-full max-w-md bg-[#080c08] border-2 border-emerald-500/30 rounded-[3rem] p-10 shadow-[0_0_100px_rgba(16,185,129,0.1)] overflow-hidden"
+              className="relative w-full max-w-lg bg-[#080c08] border-2 border-emerald-500/30 rounded-[3rem] p-12 shadow-[0_0_100px_rgba(16,185,129,0.1)] overflow-y-auto max-h-[90vh]"
             >
               <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-transparent via-emerald-500 to-transparent opacity-50" />
               
               <div className="flex justify-between items-center mb-10">
                 <h2 className="text-3xl font-black text-white tracking-tight">
-                  {editingAppId ? 'Editar Acceso' : 'Añadir Acceso'}
+                  {editingAppId ? 'Configurar Acceso' : 'Nuevo Lanzador'}
                 </h2>
                 <button 
                   onClick={() => {
                     setIsModalOpen(false);
                     setEditingAppId(null);
-                    setNewApp({ name: '', url: '', color: 'bg-indigo-500' });
+                    setNewApp({ name: '', url: '', color: 'bg-indigo-500', icon: '' });
                   }} 
                   className="p-3 hover:bg-emerald-500/10 rounded-2xl transition-all text-emerald-500 hover:text-emerald-300 border border-emerald-500/10"
                 >
@@ -455,18 +473,18 @@ export default function App() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-emerald-500/60 uppercase tracking-[0.3em] ml-2">Icono / Emoji</label>
+                  <label className="text-[10px] font-black text-emerald-500/60 uppercase tracking-[0.3em] ml-2">Icono (Emoji o URL .ico)</label>
                   <input 
                     type="text"
                     value={newApp.icon}
                     onChange={e => setNewApp({...newApp, icon: e.target.value})}
-                    placeholder="Ej: 🚀 o 🎨"
+                    placeholder="🚀 o https://ejemplo.com/favicon.ico"
                     className="w-full bg-black/40 border-2 border-emerald-900/40 rounded-2xl px-6 py-5 text-base focus:outline-none focus:border-emerald-500/60 transition-all text-white placeholder:text-emerald-900/40 shadow-inner"
                   />
                 </div>
 
                 <div className="space-y-4">
-                  <label className="text-[10px] font-black text-emerald-500/60 uppercase tracking-[0.3em] ml-2">Identidad Visual</label>
+                  <label className="text-[10px] font-black text-emerald-500/60 uppercase tracking-[0.3em] ml-2">Color de Fondo</label>
                   <div className="grid grid-cols-4 gap-4">
                     {['bg-emerald-600', 'bg-blue-600', 'bg-indigo-600', 'bg-purple-600', 'bg-pink-600', 'bg-orange-600', 'bg-red-600', 'bg-zinc-800'].map(color => (
                       <button
@@ -479,12 +497,26 @@ export default function App() {
                   </div>
                 </div>
 
-                <button 
-                  type="submit"
-                  className="w-full bg-emerald-500 text-black font-black py-6 rounded-2xl transition-all shadow-[0_20px_40px_rgba(16,185,129,0.3)] hover:bg-emerald-400 hover:-translate-y-1 active:scale-95 mt-6 text-sm uppercase tracking-[0.2em]"
-                >
-                  {editingAppId ? 'Actualizar' : 'Añadir al Hub'}
-                </button>
+                <div className="flex gap-4 pt-4">
+                  {editingAppId && (
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        removeApp(editingAppId);
+                        setIsModalOpen(false);
+                      }}
+                      className="flex-1 bg-red-500/10 text-red-500 border-2 border-red-500/20 font-black py-6 rounded-2xl transition-all hover:bg-red-500 hover:text-white text-sm uppercase tracking-[0.2em]"
+                    >
+                      Eliminar
+                    </button>
+                  )}
+                  <button 
+                    type="submit"
+                    className="flex-[2] bg-emerald-500 text-black font-black py-6 rounded-2xl transition-all shadow-[0_20px_40px_rgba(16,185,129,0.3)] hover:bg-emerald-400 hover:-translate-y-1 active:scale-95 text-sm uppercase tracking-[0.2em]"
+                  >
+                    {editingAppId ? 'Guardar Cambios' : 'Guardar Lanzador'}
+                  </button>
+                </div>
               </form>
             </motion.div>
           </div>
